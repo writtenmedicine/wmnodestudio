@@ -22,7 +22,7 @@ const triggerPDFGeneration = async (req, res) => {
                     var warningArray = allWarns.map(function(elem){ return elem.warn_id; }).join(",")
                 
                     const [getWarnings, gwsf] = await pool.pool1.execute(`SELECT warn_eng, warn_trans FROM ${(getWarns[0].patientLanguage).toLowerCase()}_warning WHERE warn_id IN (${warningArray})`);
-                    
+
                     getLabels[0].labelWarnings = JSON.stringify(getWarnings);
                 }
                 labelData.push(getLabels[0]);
@@ -105,7 +105,9 @@ const generatePDFLabel = async (type, url, labelData, language) => {
     try {
         console.log(labelData);
         // Create a browser instance
-        const browser = await puppeteer.launch();
+        const browser = await puppeteer.launch({
+            executablePath: '/usr/bin/chromium-browser'
+        });
 
         // Create a new page
         const page = await browser.newPage();
