@@ -15,9 +15,12 @@ const triggerPDFGeneration = async (req, res) => {
                 //get BNF Warnings
                 const [getWarns, gwf] = await pool.pool1.execute(`SELECT patientLanguage, labelWarnings FROM wm_labels WHERE labelId=?`, [ele]); 
                 var allWarns = JSON.parse(getWarns[0].labelWarnings);
-                var warningArray = allWarns.map(function(elem){ return elem.warn_id; }).join(",")
+                var getWarnings = [];
+                if(allWarns.length > 0){
+                    var warningArray = allWarns.map(function(elem){ return elem.warn_id; }).join(",")
                 
-                const [getWarnings, gwsf] = await pool.pool1.execute(`SELECT warn_eng, warn_trans FROM ${getWarns[0].patientLanguage}_warning WHERE warn_id IN (${warningArray})`);
+                    [getWarnings, gwsf] = await pool.pool1.execute(`SELECT warn_eng, warn_trans FROM ${(getWarns[0].patientLanguage).toLowerCase()}_warning WHERE warn_id IN (${warningArray})`);
+                }
 
                 const [getLabels, glf] = await pool.pool1.execute(`SELECT labelId, patientId, pharmId, drugId, custDrugId, drugQuantity, custDrug, engDrug, transDrug, patientName, patientLanguage, labelCreatedDate, labelModifiedAt, engDirection, transDirection, direction_img, labelCreatedBy, labelModifiedBy, labelUrl, drugType, isActive FROM wm_labels WHERE labelId=?`, [ele]);
                 getLabels[0].labelWarnings = JSON.stringify(getWarnings);
