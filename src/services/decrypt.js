@@ -20,6 +20,6 @@ function decryptData(text) {
 }
  
 module.exports = {encryptData, decryptData}
-let gfg = encrypt(JSON.stringify({name: "GeeksForGeeks"}));
+/* let gfg = encrypt(JSON.stringify({name: "GeeksForGeeks"}));
 console.log(gfg);
-console.log(JSON.parse(decrypt(gfg)));
+console.log(JSON.parse(decrypt(gfg))); */

@@ -2,7 +2,8 @@ const express = require('express');
 const expressLayout = require("express-ejs-layouts");
 const bodyParser = require('body-parser');
 //const auth = require('./src/user-actions/auth.route');
-const labelRoute = require('./src/labels/labels-generation.route.js');
+const labelRoute = require('./src/labels/labels-generation.route');
+const wmAPIRoute = require('./src/api/wmapi.route');
 
 const dotenv = require('dotenv').config()
 require('dotenv/config');
@@ -45,6 +46,7 @@ wmServices.use((req, res, next) => {
 
 //wmServices.use('/bmapi/auth', auth); //Auth
 wmServices.use('/wm/label-generation', labelRoute);
+wmServices.use('/wm/rest-api', wmAPIRoute);
 
 const wmStudioPort = process.env.PORT || 5000
 

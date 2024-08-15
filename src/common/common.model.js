@@ -26,6 +26,8 @@ const uploadFile = (fileName, cb) => {
         ContentType: 'application/octet-stream',
         CacheControl: 'public, max-age=86400'
      };
+     // S3 ManagedUpload with callbacks is not supported in AWS SDK for JavaScript (v3).
+     // Please convert to 'await client.upload(params, options).promise()', and re-run aws-sdk-js-codemod.
      s3.upload(params, async (s3Err, data) => {
          if (s3Err) throw s3Err
          var locationUrl = await getSignedUrl(upFile);
