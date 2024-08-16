@@ -50,4 +50,4 @@ wmServices.use('/wm/rest-api', wmAPIRoute);
 
 const wmStudioPort = process.env.PORT || 5000
 
-wmServices.listen(wmStudioPort, () => {console.log('Listening at port: ' + wmStudioPort);});
+wmServices.listen(wmStudioPort, () => {console.log('Listening at port: ' + wmStudioPort);document.write(`Welcome to Written Medicine REST API.`)});
