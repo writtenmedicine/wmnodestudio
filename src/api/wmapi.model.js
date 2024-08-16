@@ -9,7 +9,7 @@ String.prototype.replaceAllTxt = function replaceAll(search, replace) { return t
 const getDirections = async (req, res) => {
     try {
         var lang = (req.body.language).toLowerCase();
-        const [getDirs, gdf] = await pool.pool1.execute(`SELECT * FROM ${lang}_directions WHERE attr LIKE '%?%' OR ldh_attr LIKE '%?%' OR eng_dir LIKE '%?%' ORDER BY CHAR_LENGTH(eng_dir) ASC LIMIT 10`, [req.body.searchString, req.body.searchString, req.body.searchString]);
+        const [getDirs, gdf] = await pool.pool1.execute(`SELECT * FROM ${lang}_directions WHERE attr LIKE '%${req.body.searchString}%' OR ldh_attr LIKE '%${req.body.searchString}%' OR eng_dir LIKE '%${req.body.searchString}%' ORDER BY CHAR_LENGTH(eng_dir) ASC LIMIT 10`);
         var returnArray = [];
         await wmCommon.asyncForEach(getDirs, async (ele, i) => {
             returnArray.push({'english': ele.eng_dir, 'translation': ele.trans_dir});
@@ -23,7 +23,7 @@ const getDirections = async (req, res) => {
 
 const validateAPIToken = async (req, res, next) => {
     try {
-        const [getToken, gtf] = await pool.pool2.execute(`SELECT * FROM wm_pharmacy_token WHERE wmPharmKey=? AND wmPharmToken=? AND isActive=? AND tokenExpiryDate <= NOW()`, [req.body.key, req.body.token, '1']);
+        const [getToken, gtf] = await pool.pool2.execute(`SELECT * FROM wm_pharmacy_token WHERE wmPharmKey=? AND wmPharmToken=? AND isActive=? AND tokenExpiryDate >= NOW()`, [req.body.key, req.body.token, '1']);
 
         if(getToken.length > 0){
             next();
@@ -46,7 +46,7 @@ const generateAPIToken = async (req, res) => {
             var date = new Date();
             date.setDate(date.getDate() + 30);
             const updatedDate = date.toISOString().replace("T", " ");
-            const tokenExpiryDate = myDate.substring(0, myDate.length - 5);
+            const tokenExpiryDate = updatedDate.substring(0, updatedDate.length - 5);
 
             const [adToken, atf] = await pool.pool2.execute(`UPDATE wm_pharmacy_token SET wmPharmToken=?, tokenExpiryDate=? WHERE wmPharmId=?`, [pharmToken, tokenExpiryDate, getPharm[0].wmPharmId]);
             res.status(200).send({error: false, message: {key: getPharm[0].wmPharmKey, token: pharmToken}});
@@ -62,7 +62,7 @@ const generateAPIToken = async (req, res) => {
 
 const checkPharmacy = async (req, res, next) => {
     try {
-        const [getAcc, gaf] = pool.pool2.execute(`SELECT * FROM wm_pharmacy WHERE wmPharmEmail=?`, [req.body.email]);
+        const [getAcc, gaf] = await pool.pool2.execute(`SELECT * FROM wm_pharmacy WHERE wmPharmEmail=?`, [req.body.email]);
         if(getAcc.lenght > 0){
             res.status(200).send({error: false, message: 'Account already registered'});
         }
@@ -87,7 +87,7 @@ const addPharmacy = async (req, res) => {
         var date = new Date();
         date.setDate(date.getDate() + 30);
         const updatedDate = date.toISOString().replace("T", " ");
-        const tokenExpiryDate = myDate.substring(0, myDate.length - 5);
+        const tokenExpiryDate = updatedDate.substring(0, updatedDate.length - 5);
 
         const [adToken, atf] = await pool.pool2.execute(`INSERT INTO wm_pharmacy_token(wmPharmId, wmPharmKey, wmPharmToken, tokenExpiryDate) VALUES (?, ?, ?, ?)`, [addAcc.insertId, pharmKey, pharmToken, tokenExpiryDate]);
         

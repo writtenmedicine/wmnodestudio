@@ -1,7 +1,7 @@
 const pool = require('../config/db.config');
-const cfSign = require('aws-cloudfront-sign');
+//const cfSign = require('aws-cloudfront-sign');
 const fs = require('fs');
-const AWS = require('aws-sdk');
+//const AWS = require('aws-sdk');
 
 async function asyncForEach(array, callback) {
     for (let i = 0; i < array.length; i++) {
@@ -9,7 +9,7 @@ async function asyncForEach(array, callback) {
     }
 }
 
-const s3 = new AWS.S3({
+/* const s3 = new AWS.S3({
     accessKeyId: process.env.S3_KEY_ID,
     secretAccessKey: process.env.S3_KEY
 });
@@ -48,7 +48,7 @@ const getSignedUrl = async (url)=>{
         signingParams,
     );
     return signedUrl;
-}
+} */
 
 function weekOfMonth() {
     var date = new Date();
@@ -162,4 +162,4 @@ function decodeEntities(encodedString) {
     });
 }
 
-module.exports = {asyncForEach, dateDiff, getSignedUrl, weekOfMonth, create_UUID, formatDate, generateString}
+module.exports = {asyncForEach, dateDiff, weekOfMonth, create_UUID, formatDate, generateString}
