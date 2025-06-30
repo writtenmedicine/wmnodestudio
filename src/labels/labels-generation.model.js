@@ -209,8 +209,9 @@ const getLabelInformation = async (req, res) => {
                     labelWarns.push({warnEng: warnEng, warnTrans: warnTrans});
                 }
             })
+            getLbl[0].labelWarnings = labelWarns;
         }
-        getLbl[0].labelWarnings = labelWarns;
+        
         getLbl[0].pictogramSVGLocation = await commonFunctions.getSignedUrl(getLbl[0].pictogramSVGLocation);
         const [getUrls, guf] = await pool.pool1.execute(`SELECT infoURLS FROM wm_drug_direction_mapping WHERE iProductID=? AND isActive=?`, [getLbl[0].drugId, '1']);
 
