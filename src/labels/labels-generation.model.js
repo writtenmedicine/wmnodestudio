@@ -3,6 +3,7 @@ const puppeteer = require("puppeteer");
 const fs = require("fs");
 const commonFunctions = require('../common/common.model');
 const { v4: uuidv4 } = require('uuid');
+const QRCode = require('qrcode');
 
 const triggerPDFGeneration = async (req, res) => {
     try {
@@ -105,9 +106,7 @@ const generatePDFLabel = async (type, url, labelData, language) => {
     try {
         console.log(labelData);
         // Create a browser instance
-        const browser = await puppeteer.launch({
-            executablePath: '/usr/bin/chromium-browser'
-        });
+        const browser = await puppeteer.launch();
 
         // Create a new page
         const page = await browser.newPage();
@@ -164,12 +163,12 @@ const generatePDFLabel = async (type, url, labelData, language) => {
         await page.emulateMediaType("screen");
 
         var fileName = uuidv4();
-        var pdfPath = `/var/www/html/temp/${fileName}.pdf`;
-        var finalFile = `temp/${fileName}.pdf`;
+        var pdfPath = `./src/temp/${fileName}.pdf`;
+        var finalFile = `${fileName}.pdf`;
         // Downlaod the PDF
         const pdf = await page.pdf({
             path: pdfPath,
-            margin: { top: "30px", right: "20px", bottom: 0, left: "20px" },
+            margin: { top: "30px", right: 1, bottom: 0, left: 1 },
             printBackground: true,
             //format: "A4",
             height: 79.37 + 'mm',
@@ -188,4 +187,59 @@ const generatePDFLabel = async (type, url, labelData, language) => {
   }
 };
 
-module.exports = {triggerPDFGeneration, generatePDFA4}
+async function getWarnEnglish(warnId){
+    const [getWnEng, gwef] = await pool.pool1.execute(`SELECT wmInstructionText FROM wm_instructions WHERE standardWarningId=?`, [warnId]);
+    return getWnEng[0].wmInstructionText;
+}
+
+const getLabelInformation = async (req, res) => {
+    try {
+        let labelData = [];
+        let urlArray = [];
+        let labelWarns = [];
+        const [getLbl, glf] = await pool.pool1.execute(`SELECT wl.drugId, wl.drugQuantity, wl.custDrug, wl.engDrug, wl.transDrug, wl.engDirection, wl.transDirection, wl.labelWarnings, DATE_FORMAT(wl.labelCreatedDate, '%d %M %Y') AS labelCreatedDate, wp.pictogramSVGLocation FROM wm_labels wl LEFT JOIN wm_pictograms wp ON (wl.direction_img=wp.pictogramId AND wp.isActive=?) WHERE wl.labelId=? AND wl.isActive=?`, ['1', req.body.lbl, '1']);
+        
+        if(getLbl[0].labelWarnings){
+            let labelWarnings = JSON.parse(getLbl[0].labelWarnings);
+
+            await commonFunctions.asyncForEach(labelWarnings, async(elem, k) => {
+                if(elem.warn_id){
+                    warnEng = (!elem.mandatory_id) ? await getWarnEnglish(elem.warn_id) : elem.warn_eng;
+                    warnTrans = elem.warn_trans;
+                    labelWarns.push({warnEng: warnEng, warnTrans: warnTrans});
+                }
+            })
+        }
+        getLbl[0].labelWarnings = labelWarns;
+        getLbl[0].pictogramSVGLocation = await commonFunctions.getSignedUrl(getLbl[0].pictogramSVGLocation);
+        const [getUrls, guf] = await pool.pool1.execute(`SELECT infoURLS FROM wm_drug_direction_mapping WHERE iProductID=? AND isActive=?`, [getLbl[0].drugId, '1']);
+
+        await commonFunctions.asyncForEach(getUrls, async (ele, i ) => {
+            var urlIds = JSON.parse(ele.infoURLS);
+            await commonFunctions.asyncForEach(urlIds, async (el, j) => {
+                const [sinUrl, suf] = await pool.pool1.execute(`SELECT drugInfoUrl, drugInfoUrlDesc FROM wm_drug_info_urls WHERE drugInfoUrlId=? AND isActive=?`, [el, '1']);
+
+                let nUrl = {infoUrl: sinUrl[0].drugInfoUrl, infoDesc: sinUrl[0].drugInfoUrlDesc};
+
+                var infoUrlData = '';
+                await QRCode.toDataURL(sinUrl[0].drugInfoUrl, function (err, url) {
+                    if (err) {
+                        console.error('Error generating QR code:', err);
+                        return;
+                    }
+                    nUrl.infoUrlData = url;
+                });
+                
+                commonFunctions.addUniqueObjectToArray(urlArray, nUrl, 'infoUrl', sinUrl[0].drugInfoUrl);
+            })
+        })
+        getLbl[0].additionalInfo = urlArray;
+        delete getLbl[0]['drugId'];
+        res.status(200).send({error: false, message: getLbl});
+    } catch (error) {
+        console.log(error);
+        res.status(400).send({error: true, message: "Error Processing Request"});
+    }
+}
+
+module.exports = {triggerPDFGeneration, generatePDFA4, getLabelInformation}

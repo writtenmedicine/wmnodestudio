@@ -9,10 +9,11 @@ String.prototype.replaceAllTxt = function replaceAll(search, replace) { return t
 const getDirections = async (req, res) => {
     try {
         var lang = (req.body.language).toLowerCase();
-        const [getDirs, gdf] = await pool.pool1.execute(`SELECT * FROM ${lang}_directions WHERE attr LIKE '%${req.body.searchString}%' OR ldh_attr LIKE '%${req.body.searchString}%' OR eng_dir LIKE '%${req.body.searchString}%' ORDER BY CHAR_LENGTH(eng_dir) ASC LIMIT 10`);
+        var dirColumn = lang+'_dir';
+        const [getDirs, gdf] = await pool.pool1.execute(`SELECT eng_dir AS 'english', ${dirColumn} AS 'translation' FROM wm_directions WHERE attr LIKE '%${req.body.searchString}%' OR ldh_attr LIKE '%${req.body.searchString}%' OR eng_dir LIKE '%${req.body.searchString}%' ORDER BY CHAR_LENGTH(eng_dir) ASC LIMIT 10`);
         var returnArray = [];
         await wmCommon.asyncForEach(getDirs, async (ele, i) => {
-            returnArray.push({'english': ele.eng_dir, 'translation': ele.trans_dir});
+            returnArray.push(ele);
         });        
         res.status(200).send({error: false, message: returnArray});
     } catch (error) {

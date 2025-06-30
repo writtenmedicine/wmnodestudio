@@ -1,7 +1,6 @@
 const pool = require('../config/db.config');
-//const cfSign = require('aws-cloudfront-sign');
 const fs = require('fs');
-//const AWS = require('aws-sdk');
+const AWS = require('aws-sdk');
 
 async function asyncForEach(array, callback) {
     for (let i = 0; i < array.length; i++) {
@@ -9,12 +8,14 @@ async function asyncForEach(array, callback) {
     }
 }
 
-/* const s3 = new AWS.S3({
-    accessKeyId: process.env.S3_KEY_ID,
-    secretAccessKey: process.env.S3_KEY
+const s3 = new AWS.S3({
+    accessKeyId: process.env.S3_ACCESS_KEY_ID,
+    secretAccessKey: process.env.S3_ACCESS_KEY,
+    region: process.env.S3_REGION,
+    signatureVersion: 'v4',
 });
 
-const uploadFile = (fileName, cb) => {
+/*const uploadFile = (fileName, cb) => {
     var upFile = 'reports/dailyTrackerReport.'+Date.now()+'.csv';
   fs.readFile(fileName, async (err, data) => {
      if (err) throw err;
@@ -34,21 +35,20 @@ const uploadFile = (fileName, cb) => {
          return cb(null, {reportUrl: locationUrl})
      });
   });
-};
+}; */
 
 const getSignedUrl = async (url)=>{
-    const signingParams = {
-        keypairId: process.env.CLOUD_FRONT_KEYPAIR_ID,
-        privateKeyPath: require('path').join(process.env.CLOUDFRONT_KEY),
-        expireTime: new Date().getTime() + 90480000,
-    };
-    // Generating a signed URL
-    const signedUrl = cfSign.getSignedUrl(
-        `${process.env.CLOUD_FRONT_URL}${url}`,
-        signingParams,
-    );
+    const myBucket = process.env.S3_PICTOGRAM_BUCKET;
+    const myKey = url;
+    const signedUrlExpireSeconds = 60 * 5;
+
+    const signedUrl = s3.getSignedUrl('getObject', {
+        Bucket: myBucket,
+        Key: myKey,
+        Expires: signedUrlExpireSeconds
+    })
     return signedUrl;
-} */
+}
 
 function weekOfMonth() {
     var date = new Date();
@@ -162,4 +162,19 @@ function decodeEntities(encodedString) {
     });
 }
 
-module.exports = {asyncForEach, dateDiff, weekOfMonth, create_UUID, formatDate, generateString}
+function addUniqueObjectToArray(array, newObject, keyToCheck, valueToCheck) {
+    let exists = false;
+    for (let i = 0; i < array.length; i++) {
+        const obj = array[i];
+        if (obj && obj.hasOwnProperty(keyToCheck) && obj[keyToCheck] === valueToCheck) {
+            exists = true;
+            break;
+        }
+    }
+
+    if (!exists) {
+        array.push(newObject);
+    }
+}
+
+module.exports = {asyncForEach, getSignedUrl, dateDiff, weekOfMonth, create_UUID, formatDate, generateString, addUniqueObjectToArray}
