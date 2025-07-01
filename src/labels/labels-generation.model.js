@@ -232,6 +232,7 @@ const getLabelInformation = async (req, res) => {
                             return;
                         }
                         nUrl.infoUrlData = resUrl;
+                        console.log(nUrl);
                     });
                     console.log(nUrl);
                     await commonFunctions.addUniqueObjectToArray(urlArray, nUrl, 'infoUrl', sinUrl[0].drugInfoUrl);
