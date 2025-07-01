@@ -225,8 +225,10 @@ const getLabelInformation = async (req, res) => {
 
                     let nUrl = {infoUrl: sinUrl[0].drugInfoUrl, infoDesc: sinUrl[0].drugInfoUrlDesc};
                     nUrl.infoUrlData = await commonFunctions.getQRData(sinUrl[0].drugInfoUrl);
-                    //await commonFunctions.addUniqueObjectToArray(urlArray, nUrl, 'infoUrl', sinUrl[0].drugInfoUrl);
-                    setTimeout(commonFunctions.addUniqueObjectToArray, 3000, urlArray, nUrl, 'infoUrl', sinUrl[0].drugInfoUrl);
+                    console.log(nUrl);
+                    await commonFunctions.addUniqueObjectToArray(urlArray, nUrl, 'infoUrl', sinUrl[0].drugInfoUrl);
+                    console.log('----------');
+                    console.log(nUrl);
                 })
             })
         }
