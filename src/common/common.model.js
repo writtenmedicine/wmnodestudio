@@ -1,6 +1,7 @@
 const pool = require('../config/db.config');
 const fs = require('fs');
 const AWS = require('aws-sdk');
+const QRCode = require('qrcode');
 
 async function asyncForEach(array, callback) {
     for (let i = 0; i < array.length; i++) {
@@ -177,4 +178,14 @@ function addUniqueObjectToArray(array, newObject, keyToCheck, valueToCheck) {
     }
 }
 
-module.exports = {asyncForEach, getSignedUrl, dateDiff, weekOfMonth, create_UUID, formatDate, generateString, addUniqueObjectToArray}
+const getQRData = async (dataUrl) => {
+    QRCode.toDataURL(dataUrl, function (err, url) {
+        if (err) {
+            console.error('Error generating QR code:', err);
+            return;
+        }
+        return url;
+    });
+}
+
+module.exports = {asyncForEach, getSignedUrl, dateDiff, weekOfMonth, create_UUID, formatDate, generateString, addUniqueObjectToArray, getQRData}
