@@ -162,7 +162,7 @@ function decodeEntities(encodedString) {
     });
 }
 
-async function addUniqueObjectToArray(array, newObject, keyToCheck, valueToCheck) {
+function addUniqueObjectToArray(array, newObject, keyToCheck, valueToCheck) {
     let exists = false;
     for (let i = 0; i < array.length; i++) {
         const obj = array[i];
