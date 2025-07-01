@@ -231,12 +231,11 @@ const getLabelInformation = async (req, res) => {
                             return;
                         }
                         nUrl.infoUrlData = url;
-                        commonFunctions.addUniqueObjectToArray(urlArray, nUrl, 'infoUrl', sinUrl[0].drugInfoUrl);
-                        
+                        commonFunctions.addUniqueObjectToArray(urlArray, nUrl, 'infoUrl', sinUrl[0].drugInfoUrl);                        
                     });
                 })
+                console.log(urlArray);
             })
-            console.log(urlArray);
         }
         getLbl[0].additionalInfo = urlArray;
         delete getLbl[0]['drugId'];
