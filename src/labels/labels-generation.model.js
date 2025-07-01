@@ -3,6 +3,7 @@ const puppeteer = require("puppeteer");
 const fs = require("fs");
 const commonFunctions = require('../common/common.model');
 const { v4: uuidv4 } = require('uuid');
+const QRCode = require('qrcode');
 
 const triggerPDFGeneration = async (req, res) => {
     try {
@@ -224,7 +225,14 @@ const getLabelInformation = async (req, res) => {
                     const [sinUrl, suf] = await pool.pool1.execute(`SELECT drugInfoUrl, drugInfoUrlDesc FROM wm_drug_info_urls WHERE drugInfoUrlId=? AND isActive=?`, [el, '1']);
 
                     let nUrl = {infoUrl: sinUrl[0].drugInfoUrl, infoDesc: sinUrl[0].drugInfoUrlDesc};
-                    nUrl.infoUrlData = await commonFunctions.getQRData(sinUrl[0].drugInfoUrl);
+                    //nUrl.infoUrlData = await commonFunctions.getQRData(sinUrl[0].drugInfoUrl);
+                    await QRCode.toDataURL(sinUrl[0].drugInfoUrl, function (err, resUrl) {
+                        if (err) {
+                            console.error('Error generating QR code:', err);
+                            return;
+                        }
+                        nUrl.infoUrlData = resUrl;
+                    });
                     console.log(nUrl);
                     await commonFunctions.addUniqueObjectToArray(urlArray, nUrl, 'infoUrl', sinUrl[0].drugInfoUrl);
                     console.log('----------');
