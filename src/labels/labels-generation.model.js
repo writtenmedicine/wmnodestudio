@@ -219,7 +219,7 @@ const getLabelInformation = async (req, res) => {
         const [getUrls, guf] = await pool.pool1.execute(`SELECT infoURLS FROM wm_drug_direction_mapping WHERE iProductID=? AND isActive=?`, [getLbl[0].drugId, '1']);
 
         if(getUrls.length > 0){
-            await commonFunctions.asyncForEach(getUrls, async (ele, i ) => {
+            await commonFunctions.asyncForEach(getUrls, async (ele, i) => {
                 var urlIds = JSON.parse(ele.infoURLS);
                 await commonFunctions.asyncForEach(urlIds, async (el, j) => {
                     const [sinUrl, suf] = await pool.pool1.execute(`SELECT drugInfoUrl, drugInfoUrlDesc FROM wm_drug_info_urls WHERE drugInfoUrlId=? AND isActive=?`, [el, '1']);
@@ -231,11 +231,10 @@ const getLabelInformation = async (req, res) => {
                             return;
                         }
                         nUrl.infoUrlData = url;
-                        commonFunctions.addUniqueObjectToArray(urlArray, nUrl, 'infoUrl', sinUrl[0].drugInfoUrl);                        
                     });
-                    console.log(urlArray);
+                    console.log(nUrl);
+                    commonFunctions.addUniqueObjectToArray(urlArray, nUrl, 'infoUrl', sinUrl[0].drugInfoUrl);
                 })
-                
             })
         }
         getLbl[0].additionalInfo = urlArray;
