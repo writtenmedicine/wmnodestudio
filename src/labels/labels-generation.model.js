@@ -191,6 +191,7 @@ async function getWarnEnglish(warnId){
     const [getWnEng, gwef] = await pool.pool1.execute(`SELECT wmInstructionText FROM wm_instructions WHERE standardWarningId=?`, [warnId]);
     return getWnEng[0].wmInstructionText;
 }
+const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
 
 const getLabelInformation = async (req, res) => {
     try {
@@ -234,7 +235,7 @@ const getLabelInformation = async (req, res) => {
                         nUrl.infoUrlData = resUrl;
                         console.log(nUrl);
                     });
-                    console.log(nUrl);
+                    await delay(3000);
                     await commonFunctions.addUniqueObjectToArray(urlArray, nUrl, 'infoUrl', sinUrl[0].drugInfoUrl);
                     console.log('----------');
                     console.log(nUrl);
