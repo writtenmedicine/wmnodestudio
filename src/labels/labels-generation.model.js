@@ -212,28 +212,33 @@ const getLabelInformation = async (req, res) => {
             getLbl[0].labelWarnings = labelWarns;
         }
         
-        getLbl[0].pictogramSVGLocation = await commonFunctions.getSignedUrl(getLbl[0].pictogramSVGLocation);
+        if(getLbl[0].pictogramSVGLocation){
+            getLbl[0].pictogramSVGLocation = await commonFunctions.getSignedUrl(getLbl[0].pictogramSVGLocation);
+        }
+
         const [getUrls, guf] = await pool.pool1.execute(`SELECT infoURLS FROM wm_drug_direction_mapping WHERE iProductID=? AND isActive=?`, [getLbl[0].drugId, '1']);
 
-        await commonFunctions.asyncForEach(getUrls, async (ele, i ) => {
-            var urlIds = JSON.parse(ele.infoURLS);
-            await commonFunctions.asyncForEach(urlIds, async (el, j) => {
-                const [sinUrl, suf] = await pool.pool1.execute(`SELECT drugInfoUrl, drugInfoUrlDesc FROM wm_drug_info_urls WHERE drugInfoUrlId=? AND isActive=?`, [el, '1']);
+        if(getUrls.length > 0){
+            await commonFunctions.asyncForEach(getUrls, async (ele, i ) => {
+                var urlIds = JSON.parse(ele.infoURLS);
+                await commonFunctions.asyncForEach(urlIds, async (el, j) => {
+                    const [sinUrl, suf] = await pool.pool1.execute(`SELECT drugInfoUrl, drugInfoUrlDesc FROM wm_drug_info_urls WHERE drugInfoUrlId=? AND isActive=?`, [el, '1']);
 
-                let nUrl = {infoUrl: sinUrl[0].drugInfoUrl, infoDesc: sinUrl[0].drugInfoUrlDesc};
+                    let nUrl = {infoUrl: sinUrl[0].drugInfoUrl, infoDesc: sinUrl[0].drugInfoUrlDesc};
 
-                var infoUrlData = '';
-                await QRCode.toDataURL(sinUrl[0].drugInfoUrl, function (err, url) {
-                    if (err) {
-                        console.error('Error generating QR code:', err);
-                        return;
-                    }
-                    nUrl.infoUrlData = url;
-                });
-                
-                commonFunctions.addUniqueObjectToArray(urlArray, nUrl, 'infoUrl', sinUrl[0].drugInfoUrl);
+                    var infoUrlData = '';
+                    await QRCode.toDataURL(sinUrl[0].drugInfoUrl, function (err, url) {
+                        if (err) {
+                            console.error('Error generating QR code:', err);
+                            return;
+                        }
+                        nUrl.infoUrlData = url;
+                    });
+                    
+                    commonFunctions.addUniqueObjectToArray(urlArray, nUrl, 'infoUrl', sinUrl[0].drugInfoUrl);
+                })
             })
-        })
+        }
         getLbl[0].additionalInfo = urlArray;
         delete getLbl[0]['drugId'];
         res.status(200).send({error: false, message: getLbl});
