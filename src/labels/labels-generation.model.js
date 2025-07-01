@@ -225,7 +225,7 @@ const getLabelInformation = async (req, res) => {
                     const [sinUrl, suf] = await pool.pool1.execute(`SELECT drugInfoUrl, drugInfoUrlDesc FROM wm_drug_info_urls WHERE drugInfoUrlId=? AND isActive=?`, [el, '1']);
 
                     let nUrl = {infoUrl: sinUrl[0].drugInfoUrl, infoDesc: sinUrl[0].drugInfoUrlDesc};
-                    QRCode.toDataURL(sinUrl[0].drugInfoUrl, function (err, url) {
+                    await QRCode.toDataURL(sinUrl[0].drugInfoUrl, function (err, url) {
                         if (err) {
                             console.error('Error generating QR code:', err);
                             return;
@@ -233,7 +233,7 @@ const getLabelInformation = async (req, res) => {
                         nUrl.infoUrlData = url;
                     });
                     
-                    commonFunctions.addUniqueObjectToArray(urlArray, nUrl, 'infoUrl', sinUrl[0].drugInfoUrl);
+                    await commonFunctions.addUniqueObjectToArray(urlArray, nUrl, 'infoUrl', sinUrl[0].drugInfoUrl);
                 })
             })
         }
