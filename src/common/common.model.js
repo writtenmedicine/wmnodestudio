@@ -163,7 +163,7 @@ function decodeEntities(encodedString) {
     });
 }
 
-function addUniqueObjectToArray(array, newObject, keyToCheck, valueToCheck) {
+async function addUniqueObjectToArray(array, newObject, keyToCheck, valueToCheck) {
     let exists = false;
     for (let i = 0; i < array.length; i++) {
         const obj = array[i];
