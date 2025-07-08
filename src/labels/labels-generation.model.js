@@ -198,7 +198,7 @@ const getLabelInformation = async (req, res) => {
         let labelData = [];
         let urlArray = [];
         let labelWarns = [];
-        const [getLbl, glf] = await pool.pool1.execute(`SELECT wl.drugId, wl.drugQuantity, wl.custDrug, wl.engDrug, wl.transDrug, wl.engDirection, wl.transDirection, wl.labelWarnings, DATE_FORMAT(wl.labelCreatedDate, '%d %M %Y') AS labelCreatedDate, wp.pictogramSVGLocation FROM wm_labels wl LEFT JOIN wm_pictograms wp ON (wl.direction_img=wp.pictogramId AND wp.isActive=?) WHERE wl.labelId=? AND wl.isActive=?`, ['1', req.body.lbl, '1']);
+        const [getLbl, glf] = await pool.pool1.execute(`SELECT wl.drugId, wl.drugQuantity, wl.custDrug, wl.engDrug, wl.transDrug, wl.engDirection, wl.transDirection, wl.labelWarnings, DATE_FORMAT(wl.labelCreatedDate, '%d %M %Y') AS labelCreatedDate, wp.pictogramSVGLocation, CONCAT_WS(' ', wmph.pharmAddress, wmph.pharmCity, wmph.pharmPostcode) AS pharmAddress, wmph.pharmContact, wps.pharmLogo FROM wm_labels wl LEFT JOIN wm_pictograms wp ON (wl.direction_img=wp.pictogramId AND wp.isActive=?) INNER JOIN wm_pharmacy wmph on wl.pharmId=wmph.pharmId LEFT JOIN wm_pharmacy_settings wps ON wl.pharmId=wps.pharmId WHERE wl.labelId=? AND wl.isActive=?`, ['1', req.body.lbl, '1']);
         
         if(getLbl[0].labelWarnings){
             let labelWarnings = JSON.parse(getLbl[0].labelWarnings);
