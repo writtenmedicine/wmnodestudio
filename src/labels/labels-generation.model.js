@@ -200,6 +200,11 @@ const getLabelInformation = async (req, res) => {
         let labelWarns = [];
         const [getLbl, glf] = await pool.pool1.execute(`SELECT wl.drugId, wl.drugQuantity, wl.custDrug, wl.engDrug, wl.transDrug, wl.engDirection, wl.transDirection, wl.labelWarnings, DATE_FORMAT(wl.labelCreatedDate, '%d %M %Y') AS labelCreatedDate, wp.pictogramSVGLocation, CONCAT_WS(' ', wmph.pharmAddress, wmph.pharmCity, wmph.pharmPostcode) AS pharmAddress, wmph.pharmContact, wps.pharmLogo FROM wm_labels wl LEFT JOIN wm_pictograms wp ON (wl.direction_img=wp.pictogramId AND wp.isActive=?) INNER JOIN wm_pharmacy wmph on wl.pharmId=wmph.pharmId LEFT JOIN wm_pharmacy_settings wps ON wl.pharmId=wps.pharmId WHERE wl.labelId=? AND wl.isActive=?`, ['1', req.body.lbl, '1']);
         
+        let medicineSpeech = `Medicine: ` + getLbl[0].engDrug;
+        let directionSpeech = `Directions of use: ` + getLbl[0].engDirection; 
+        let warningSpeech = `Warnings & Guidance: `;
+        let fullSpeech = `Medicine: ` + getLbl[0].engDrug + `. Directions of use: ` + getLbl[0].engDirection + `. `;
+
         if(getLbl[0].labelWarnings){
             let labelWarnings = JSON.parse(getLbl[0].labelWarnings);
 
@@ -208,9 +213,11 @@ const getLabelInformation = async (req, res) => {
                     warnEng = (!elem.mandatory_id) ? await getWarnEnglish(elem.warn_id) : elem.warn_eng;
                     warnTrans = elem.warn_trans;
                     labelWarns.push({warnEng: warnEng, warnTrans: warnTrans});
+                    warningSpeech += warnEng+` `;
                 }
             })
             getLbl[0].labelWarnings = labelWarns;
+            fullSpeech += warningSpeech+`.`;
         }
         
         if(getLbl[0].pictogramSVGLocation){
@@ -233,6 +240,10 @@ const getLabelInformation = async (req, res) => {
             })
         }
         getLbl[0].additionalInfo = urlArray;
+        getLbl[0].medicineSpeech = medicineSpeech;
+        getLbl[0].directionSpeech = directionSpeech;
+        getLbl[0].warningSpeech = warningSpeech;
+        getLbl[0].fullSpeech = fullSpeech;
         delete getLbl[0]['drugId'];
         res.status(200).send({error: false, message: getLbl});
     } catch (error) {
