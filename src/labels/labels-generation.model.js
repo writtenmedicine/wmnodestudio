@@ -202,7 +202,7 @@ const getLabelInformation = async (req, res) => {
         
         let medicineSpeech = `Medicine: ` + getLbl[0].engDrug;
         let directionSpeech = `Directions of use: ` + getLbl[0].engDirection; 
-        let warningSpeech = `Warnings & Guidance: `;
+        let warningSpeech = (getLbl[0].labelWarnings == '') ? `` : `Warnings & Guidance: `;
         let fullSpeech = `Medicine: ` + getLbl[0].engDrug + `. Directions of use: ` + getLbl[0].engDirection + `. `;
 
         if(getLbl[0].labelWarnings){
